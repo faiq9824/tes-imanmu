@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Tes Iman </title>
+  <style>
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Navbar Mobile */
+    .navbar-logo {
+      width: 100%;
+      height: 60px;
+      background: #00a018;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .navbar-logo img {
+      max-height: 120px;
+    }
+
+    /* Container Utama Spesifik HP */
+    .container {
+      width: 92%; /* Memberi sedikit jarak di kiri-kanan */
+      max-width: 450px;
+      margin-top: 80px;
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #2bf6a6, #00a018);
+      border-top-left-radius: 20px;
+      border-top-right-radius: 20px;
+    }
+
+    h1 {
+      font-size: 22px;
+      text-align: center;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    #progress {
+      text-align: center;
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 20px;
+    }
+
+    .question {
+      font-size: 18px;
+      line-height: 1.4;
+      text-align: center;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #2c3e50;
+    }
+
+    /* Opsi Jawaban: Dibuat besar agar mudah ditekan */
+    .options {
+      display: flex;
+      justify-content: space-around;
+      margin: 30px 0;
+    }
+
+    .icon-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon {
+      width: 50px; /* Lebih besar untuk jempol */
+      height: 50px;
+      opacity: 0.2;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+
+    .icon.selected {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+
+    /* Warna Ikon */
+    .black { fill: #333; }
+    .gray { fill: #888; }
+    .green { fill: #00a018; }
+
+    /* Navigasi */
+    .nav {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #eee;
+      color: #555;
+      transition: background 0.2s;
+    }
+
+    button:active {
+      background: #ddd;
+    }
+
+    button.primary {
+      background: #00a018;
+      color: white;
+    }
+
+    #result {
+      margin-top: 25px;
+      font-size: 24px;
+      font-weight: bold;
+      text-align: center;
+      color: #00a018;
+    }
+
+    .legend {
+      margin-top: 25px;
+      font-size: 12px;
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 10px;
+      color: #666;
+    }
+
+    #reflection, #quote {
+      width: 90%;
+      margin: 15px auto;
+      text-align: center;
+      font-size: 13px;
+      color: #777;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar-logo">
+  <img src="iman.png" alt="Logo Tes Iman">
+</nav>
+
+<div class="container">
+  <div id="progress">Memuat...</div>
+  <div id="slide"></div>
+  
+  <div class="nav">
+    <button onclick="prevQuestion()">⬅️ kembali</button>
+    <button class="primary" onclick="nextQuestion()">Lanjut ➡️</button>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="legend">
+    👎 Hitam: Tidak mencerminkan saya<br>
+    👍 Abu: Kadang-kadang<br>
+    👍 Hijau: Sangat sesuai dengan saya
+  </div>
+</div>
+
+<div id="reflection">
+  "Jawablah dengan jujur. Tes ini bukan untuk menghakimi, melainkan untuk mengenali diri sendiri."
+</div>
+<div id="quote">
+  “Keimanan tumbuh dari kejujuran pada diri sendiri.”
+</div>
+
+<script>
+const questions = [  
+  /* 40 positif */  
+  "Saya melaksanakan ibadah wajib tepat waktu.", "Saya berdoa ketika menghadapi masalah.", "Saya merasa diawasi Tuhan dalam keseharian.", "Saya membaca kitab suci secara rutin.", "Saya berusaha jujur meski sulit.", "Saya menghindari perbuatan yang saya tahu salah.", "Saya bersyukur atas hal kecil.", "Saya bersabar ketika diuji.", "Saya membantu orang tanpa pamrih.", "Saya memaafkan orang lain.", "Saya menjaga lisan.", "Saya menepati janji.", "Saya rendah hati.", "Saya tidak iri pada orang lain.", "Saya mengingat Tuhan di waktu senggang.", "Saya menjauhi hal melalaikan.", "Saya menjaga pandangan.", "Saya menjaga amanah.", "Saya introspeksi diri.", "Saya menerima takdir.", "Saya memperbaiki diri.", "Saya tidak mudah putus asa.", "Saya tenang saat beribadah.", "Saya takut berbuat dosa.", "Saya mengutamakan akhirat dan dunia secara seimbang.", "Saya menolong keluarga.", "Saya menghormati orang tua.", "Saya berbuat baik diam-diam.", "Saya menghindari ghibah.", "Saya bersedekah.", "Saya menjaga niat.", "Saya percaya Tuhan Maha Adil.", "Saya konsisten dalam kebaikan.", "Saya tidak sombong.", "Saya menahan emosi.", "Saya yakin doa didengar.", "Saya mendahulukan kewajiban daripada keinginan.", "Saya ingin lebih baik.", "Saya takut jauh dari Tuhan.", "Saya menjaga iman.",  
+  /* 20 negatif */  
+  "Saya sering menunda ibadah.", "Saya jarang berdoa kecuali terpaksa.", "Saya merasa Tuhan tidak berperan.", "Saya sering menyakiti orang lain.", "Saya sering berbohong kecil.", "Saya tetap melakukan yang salah.", "Saya sering mengeluh.", "Saya mudah marah.", "Saya membantu jika ada untung.", "Saya sulit memaafkan.", "Saya tidak menjaga lisan.", "Saya sering ingkar janji.", "Saya merasa lebih baik dari orang lain.", "Saya tidak percaya Nabi & Rosul.", "Saya kurang percaya Tuhan.", "Saya hanya mementingkan diri sendiri.", "Saya tidak peduli kepada orang yang terkena musibah.", "Saya bersedekah hanya untuk pamer.", "Saya sering curang.", "Saya merasa iman tidak penting."  
+];  
+
+const NEGATIVE_START = 40;  
+let index = 0;  
+let answers = JSON.parse(localStorage.getItem("imanAnswers")) || new Array(questions.length).fill(null);  
+
+const thumbsUp = `<svg viewBox="0 0 24 24" class="icon"><path d="M2 21h4V9H2v12zm20-11c0-1.1-.9-2-2-2h-6.3l1-4.6.03-.32c0-.41-.17-.79-.44-1.06L13 1 6.6 7.4C6.22 7.78 6 8.3 6 8.83V19c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73V10z"/></svg>`;  
+const thumbsDown = `<svg viewBox="0 0 24 24" class="icon"><path d="M22 3h-4v12h4V3zM2 14c0 1.1.9 2 2 2h6.3l-1 4.6-.03.32c0 .41.17.79.44 1.06L11 23l6.4-6.4c.38-.38.6-.9.6-1.43V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 11.27c-.09.23-.14.47-.14.73V14z"/></svg>`;  
+
+function renderQuestion() {  
+  document.getElementById("progress").innerText = `Pertanyaan ${index + 1} dari ${questions.length}`;  
+  
+  document.getElementById("slide").innerHTML = `  
+    <div class="question">${questions[index]}</div>  
+    <div class="options">  
+      <div class="icon-wrapper" onclick="selectAnswer(1, 0)">
+        <span class="black">${thumbsDown}</span>
+      </div>
+      <div class="icon-wrapper" onclick="selectAnswer(2, 1)">
+        <span class="gray">${thumbsUp}</span>
+      </div>
+      <div class="icon-wrapper" onclick="selectAnswer(3, 2)">
+        <span class="green">${thumbsUp}</span>
+      </div>
+    </div>`;  
+
+  if (answers[index] !== null) {  
+    highlightSelection(answers[index]);
+  }  
+}  
+
+function highlightSelection(score) {
+  const isNegative = index >= NEGATIVE_START;
+  let choiceIdx;
+
+  if (!isNegative) {  
+    if (score === -1) choiceIdx = 0;  
+    if (score === 1) choiceIdx = 1;  
+    if (score === 2) choiceIdx = 2;  
+  } else {  
+    if (score === 2) choiceIdx = 0;  
+    if (score === 1) choiceIdx = 1;  
+    if (score === -1) choiceIdx = 2;  
+  }
+
+  const icons = document.querySelectorAll(".icon");
+  icons.forEach(i => i.classList.remove("selected"));
+  if(icons[choiceIdx]) icons[choiceIdx].classList.add("selected");
+}
+
+function selectAnswer(choice, iconIdx) {  
+  const isFirstTime = (answers[index] === null);
+  let score = 0;  
+  const isNegative = index >= NEGATIVE_START;  
+
+  if (!isNegative) {  
+    if (choice === 1) score = -1;  
+    if (choice === 2) score = 1;  
+    if (choice === 3) score = 2;  
+  } else {  
+    if (choice === 1) score = 2;  
+    if (choice === 2) score = 1;  
+    if (choice === 3) score = -1;  
+  }  
+
+  // Update jawaban
+  answers[index] = score;  
+  localStorage.setItem("imanAnswers", JSON.stringify(answers));  
+  
+  // Update tampilan ikon saat itu juga
+  highlightSelection(score);
+
+  // Jika ini jawaban pertama (bukan ganti jawaban), otomatis lanjut
+  if (isFirstTime) {
+    setTimeout(nextQuestion, 400);
+  }
+}  
+
+function nextQuestion() {  
+  if (index < questions.length - 1) {  
+    index++;  
+    renderQuestion();  
+  } else if (!answers.includes(null)) {  
+    showResult();  
+  } else {
+    alert("Selesaikan semua pertanyaan!");
+  }
+}  
+
+function prevQuestion() {  
+  if (index > 0) {  
+    index--;  
+    renderQuestion();  
+  }  
+}  
+
+function showResult() {  
+  const total = answers.reduce((a,b)=>a+b,0);  
+  const min = -questions.length;  
+  const max = questions.length * 2;  
+  const percent = Math.round(((total - min) / (max - min)) * 100);  
+  
+  document.getElementById("slide").innerHTML = `
+    <div style="text-align:center; padding: 20px;">
+      <button onclick="resetTest()" style="background:#f44336; color:white; margin-bottom:10px;">Ulangi Tes</button>
+    </div>
+  `;  
+  document.getElementById("progress").innerText = "Hasil Akhir";  
+  document.querySelector(".nav").style.display = "none";
+  document.querySelector(".legend").style.display = "none";
+  document.getElementById("result").innerText = `Skor Iman Anda: ${percent}%`;  
+}  
+
+function resetTest() {
+  if(confirm("Hapus semua jawaban dan ulangi?")) {
+    localStorage.removeItem("imanAnswers");
+    location.reload();
+  }
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
